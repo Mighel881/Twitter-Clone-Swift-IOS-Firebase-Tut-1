@@ -42,9 +42,53 @@ class SignUpViewController: UIViewController {
 
   
     @IBAction func didTapSignup(sender: AnyObject) {
+
+        //disbable the signUp Button to prevent user from clicking twice
+        signUp.enabled = false
+        
+        FIRAuth.auth()?.createUserWithEmail(email.text!, password: password.text!, completion: { (user, error) in
+        
+            if(error !== nil)
+            {
+                if(error!.code == 17999)
+                {
+                    self.errorMessage.text = "Inavlid email Address"
+                }
+                else
+                {
+                    self.errorMessage.text = error?.localizedDescription
+                }
+            }
+            else
+            {
+                self.errorMessage.text = "Registered Succesfully"
+        
+                FIRAuth.auth()?.signInWithEmail(self.email.text!, password: self.password.text!, completion: { (user, error) in
+        
+                    if(error == nil)
+                    {
+                        self.databaseRef.child("user_profiles").child(user!.uid).child("email").setValue(self.email.text!)
+                        
+                        self.performSegueWithIdentifier("HandleViewSegue", sender: nil)
+                    }
+                    
+                })
+            }
+        })
+        
+
     
     }
     @IBAction func textDidChange(sender: UITextField) {
+        
+        if(email.text!.characters.count>0 && password.text!.characters.count>0)
+        {
+            signUp.enabled = true
+        }
+        else
+        {
+            signUp.enabled = false
+        }
     }
 
     
@@ -67,35 +111,3 @@ class SignUpViewController: UIViewController {
     
 
 }
-//signUp.enabled = false
-//
-//FIRAuth.auth()?.createUserWithEmail(email.text!, password: password.text!, completion: { (user, error) in
-//    
-//    if(error !== nil)
-//    {
-//        if(error!.code == 17999)
-//        {
-//            self.errorMessage.text = "Inavlid email Address"
-//        }
-//        else
-//        {
-//            self.errorMessage.text = error?.localizedDescription
-//        }
-//    }
-//    else
-//    {
-//        self.errorMessage.text = "Registered Succesfully"
-//        
-//        FIRAuth.auth()?.signInWithEmail(self.email.text!, password: self.password.text!, completion: { (user, error) in
-//            
-//            if(error == nil)
-//            {
-//                self.databaseRef.child("user_profiles").child(user!.uid).child("email").setValue(self.email.text!)
-//                
-//                self.performSegueWithIdentifier("HandleViewSegue", sender: nil)
-//            }
-//            
-//        })
-//    }
-//})
-
